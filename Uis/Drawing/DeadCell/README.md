@@ -2,7 +2,7 @@
 - Modified Version Portals DeadCell Ui
 - Added My Own Things
 - Optimised Ui
-- Releasing ¯\_(ツ)_/¯
+- Releasing Whenever Im Ready
 
 ### Preview
 ![a](https://raw.githubusercontent.com/VestraTech/Roblox/main/Uis/Drawing/DeadCell/Images/Image1.png?raw=true)

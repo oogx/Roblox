@@ -1,4 +1,4 @@
-local library = loadstring(game:HttpGet('https://raw.githubusercontent.com/xandudiscord/Roblox/main/Uis/Vestra/Old/V2/Source.lua'))()
+local library = loadstring(game:HttpGet('https://raw.githubusercontent.com/xandudiscord/Roblox/main/Uis/Vestra/Old/V2/Assets/Source.lua'))()
 
 local Gui_Lib = library:Load({Title = "Vestra Hub"})
 

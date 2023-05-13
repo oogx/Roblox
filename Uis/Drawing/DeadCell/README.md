@@ -1,8 +1,7 @@
 # Hello There
 - Modified Version Portals DeadCell Ui
-- Added My Own Things
-- Optimised Ui
-- Releasing Whenever Im Ready
+- Added My Own Things | Player Tab, Player Visualisation
+- Still Shit Code
 
 ### Preview
 ![a](https://raw.githubusercontent.com/VestraTech/Roblox/main/Uis/Drawing/DeadCell/Images/Image1.png?raw=true)

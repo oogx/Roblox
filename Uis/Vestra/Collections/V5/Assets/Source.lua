@@ -12,6 +12,18 @@ local emptybindsize = textservice:GetTextSize("None", 12, Enum.Font.Gotham, huge
 local ellipsisbindsize = textservice:GetTextSize("...", 12, Enum.Font.Gotham, hugevec2).X + 12
 local placeholderboxsize = textservice:GetTextSize("Enter Text...", 12, Enum.Font.Gotham, hugevec2).X + 12
 
+local SoundNames = {
+	"Android",
+	"Bonk",
+	"CsgoHeadshot",
+	"Goof",
+	"Headshot",
+	"HitMarker",
+	"Phonk",
+	"Punch",
+	"Slap",
+}
+
 local blacklistedkeys = {
 	[Enum.KeyCode.Unknown] = true
 }
@@ -23,7 +35,7 @@ local whitelistedtypes = {
 }
 
 local theme = setmetatable({
-	items = {
+	Items = {
 		mainbackground = {},
 		titlebackground = {},
 		leftbackground = {},
@@ -46,10 +58,10 @@ local theme = setmetatable({
 	end,
 	__newindex = function(t, k, v)
 		t.values[k] = v
-		for inst, prop in next, t.items[k] do
+		for inst, prop in next, t.Items[k] do
 			inst[prop] = v
 		end
-		for inst, data in next, t.items.dynamic do
+		for inst, data in next, t.Items.dynamic do
 			local item = data.func()
 			if item == k then
 				inst[data.prop] = v
@@ -66,13 +78,13 @@ local function create(classname, properties, children)
 		if i == "Theme" then
 			for prop, item in next, v do
 				if type(item) == "function" then
-					theme.items.dynamic[inst] = {
+					theme.Items.dynamic[inst] = {
 						prop = prop,
 						func = item
 					}
 					inst[prop] = theme[item()]
 				else
-					theme.items[item][inst] = prop
+					theme.Items[item][inst] = prop
 					inst[prop] = theme[item]
 				end
 			end
@@ -347,13 +359,13 @@ end
 local bind = {}
 bind.__index = bind
 
-function bind.new(Content, Keydown, Keyup, KeyChanged)
+function bind.new(Content, Keydown, Keyup, keychanged)
 	local newbind = setmetatable({
 		itemtype = "bind",
 		Content = Content,
 		Keydown = Keydown or function() end,
 		Keyup = Keyup or function() end,
-		KeyChanged = KeyChanged or function() end
+		keychanged = keychanged or function() end
 	}, bind)
 
 	newbind.frame = create("Frame", { 
@@ -428,7 +440,7 @@ function bind:set(inputname)
 	self.library.Flags[self.Flag] = value
 	self.frame.indicator.Size = UDim2.new(0, textservice:GetTextSize(value, 12, Enum.Font.Gotham, hugevec2).X + 12, 1, 0)
 	self.frame.indicator.Text = value
-	self.KeyChanged(oldvalue, value)
+	self.keychanged(oldvalue, value)
 end
 
 --[[ Slider ]]--
@@ -436,15 +448,15 @@ end
 local slider = {}
 slider.__index = slider
 
-function slider.new(Content, min, max, float, prefix, suffix, Callback)
+function slider.new(Content, Min, Max, Float, Prefix, Suffix, Callback)
 	local newslider = setmetatable({
 		itemtype = "slider",
 		Content = Content,
-		min = min or 0,
-		max = max or 100,
-		float = float or 1,
-		prefix = prefix or "",
-		suffix = suffix or "",
+		Min = Min or 0,
+		Max = Max or 100,
+		Float = Float or 1,
+		Prefix = Prefix or "",
+		Suffix = Suffix or "",
 		Callback = Callback or function() end
 	}, slider)
 
@@ -476,7 +488,7 @@ function slider.new(Content, min, max, float, prefix, suffix, Callback)
 			},
 			Font = Enum.Font.Gotham, 
 			FontSize = Enum.FontSize.Size14, 
-			Text = tostring(newslider.min), 
+			Text = tostring(newslider.Min), 
 			TextSize = 13, 
 			TextWrap = true, 
 			TextWrapped = true, 
@@ -541,7 +553,7 @@ function slider.new(Content, min, max, float, prefix, suffix, Callback)
         if input.UserInputType == Enum.UserInputType.MouseButton1 and newslider.library.settings.dragging == false then
             newslider.library.settings.dragging = true
             local slideconn; slideconn = mouse.Move:Connect(function()
-				newslider:set(newslider.min + ((newslider.max - newslider.min) * ((mouse.X - newslider.frame.container.track.AbsolutePosition.X) / newslider.frame.container.track.AbsoluteSize.X)))
+				newslider:set(newslider.Min + ((newslider.Max - newslider.Min) * ((mouse.X - newslider.frame.container.track.AbsolutePosition.X) / newslider.frame.container.track.AbsoluteSize.X)))
 			end)
 			local inputconn; inputconn = input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
@@ -557,11 +569,11 @@ function slider.new(Content, min, max, float, prefix, suffix, Callback)
 end
 
 function slider:set(value)
-	local val = math.clamp(round(value, self.float), self.min, self.max)
+	local val = math.clamp(round(value, self.Float), self.Min, self.Max)
 	if val ~= self.library.Flags[self.Flag] then
 		self.library.Flags[self.Flag] = val
-		tween(self.frame.container.track.highlight, 0.2, { Size = UDim2.new((val - self.min) / (self.max - self.min), 0, 0, 4) })
-		self.frame.value.Text = self.prefix .. tostring(val) .. self.suffix
+		tween(self.frame.container.track.highlight, 0.2, { Size = UDim2.new((val - self.Min) / (self.Max - self.Min), 0, 0, 4) })
+		self.frame.value.Text = self.Prefix .. tostring(val) .. self.Suffix
 		self.Callback(val)
 	end
 end
@@ -1315,7 +1327,6 @@ function dropdown:set(value)
 		end
 	end
 end
-
 function dropdown:additem(item)
 	local name = tostring(item)
 	local btn = create("TextButton", { 
@@ -1361,7 +1372,27 @@ function dropdown:removeitem(item)
 		end
 	end
 end
-
+local function removeDuplicates(arr)
+	local newArray = {}
+	local checkerTbl = {}
+	for _,element in ipairs(arr) do
+	    if not checkerTbl[element] then
+	       checkerTbl[element] = true
+	       table.insert(newArray, element)
+	   end
+	end
+	return newArray
+end
+function dropdown:UpdateTable(table)
+    for i,v in pairs(self.frame.drop.container.background.container.holder:GetChildren()) do
+        if v.ClassName == "TextButton" then
+            self:removeitem(v.Name)
+        end
+    end
+    for i,v in pairs(removeDuplicates(table)) do
+        self:additem(v)
+    end
+end
 --[[ Section ]]--
 
 local section = {}
@@ -1477,7 +1508,7 @@ function section:AddLabel(options)
 	newlabel.frame.Parent = self.frame.container
 	newlabel.library = self.library
 	newlabel.Flag = options.Flag
-	self.library.items[options.Flag] = newlabel
+	self.library.Items[options.Flag] = newlabel
 
 	newlabel:update(options.Content)
 
@@ -1490,7 +1521,7 @@ function section:AddStatus(options)
 	newstatuslabel.frame.Parent = self.frame.container
 	newstatuslabel.library = self.library
 	newstatuslabel.Flag = options.Flag
-	self.library.items[options.Flag] = newstatuslabel
+	self.library.Items[options.Flag] = newstatuslabel
 
 	newstatuslabel:update(options.Status, options.Colour)
 
@@ -1503,7 +1534,7 @@ function section:AddButton(options)
 	newbutton.frame.Parent = self.frame.container
 	newbutton.library = self.library
 	newbutton.Flag = options.Flag
-	self.library.items[options.Flag] = newbutton
+	self.library.Items[options.Flag] = newbutton
 	
 	return newbutton
 end
@@ -1516,7 +1547,7 @@ function section:AddToggle(options)
 	newtoggle.Flag = options.Flag
 	newtoggle.ignore = options.ignore
 	self.library.Flags[options.Flag] = false
-	self.library.items[options.Flag] = newtoggle
+	self.library.Items[options.Flag] = newtoggle
 	
 	if options.enabled then
 		newtoggle:switch()
@@ -1526,14 +1557,14 @@ function section:AddToggle(options)
 end
 
 function section:AddKeybind(options)
-	local newbind = bind.new(options.Content, options.Keydown, options.Keyup, options.KeyChanged)
+	local newbind = bind.new(options.Content, options.Keydown, options.Keyup, options.keychanged)
 
 	newbind.frame.Parent = self.frame.container
 	newbind.library = self.library
 	newbind.Flag = options.Flag
 	newbind.ignore = options.ignore
 	self.library.Flags[options.Flag] = "None"
-	self.library.items[options.Flag] = newbind
+	self.library.Items[options.Flag] = newbind
 	
 	if options.Default then
 		newbind:set(options.Default)
@@ -1549,8 +1580,8 @@ function section:AddSlider(options)
 	newslider.library = self.library
 	newslider.Flag = options.Flag
 	newslider.ignore = options.ignore
-	self.library.Flags[options.Flag] = newslider.min
-	self.library.items[options.Flag] = newslider
+	self.library.Flags[options.Flag] = newslider.Min
+	self.library.Items[options.Flag] = newslider
 
 	if options.Default then
 		newslider:set(options.Default)
@@ -1568,7 +1599,7 @@ function section:AddTextBox(options)
 	newbox.ignore = options.ignore
 	newbox.maxsize = newbox.frame.AbsoluteSize.X - (textservice:GetTextSize(options.Content, 12, Enum.Font.Gotham, hugevec2).X + 12)
 	self.library.Flags[options.Flag] = ""
-	self.library.items[options.Flag] = newbox
+	self.library.Items[options.Flag] = newbox
 
 	if options.Default then
 		newbox:set(options.Default)
@@ -1585,13 +1616,13 @@ function section:AddColourPicker(options)
 	newpicker.Flag = options.Flag
 	newpicker.ignore = options.ignore
 	self.library.Flags[options.Flag] = { h = 0, s = 1, v = 1, rainbow = false }
-	self.library.items[options.Flag] = newpicker
+	self.library.Items[options.Flag] = newpicker
 
 	if options.Default then
 		newpicker:set(options.Default:ToHSV())
 	end
 
-	if options.Rainbow then
+	if options.rainbow then
 		newpicker:setrainbow(true)
 	end
 	
@@ -1606,7 +1637,7 @@ function section:AddDropdown(options)
 	newdropdown.Flag = options.Flag
 	newdropdown.ignore = options.ignore
 	self.library.Flags[options.Flag] = ""
-	self.library.items[options.Flag] = newdropdown
+	self.library.Items[options.Flag] = newdropdown
 
 	for i, v in next, options.Items do
 		newdropdown:additem(v)
@@ -1765,7 +1796,7 @@ function library.new(options)
 		name = options.Name,
 		game = options.Game,
 		Flags = {},
-		items = {},
+		Items = {},
 		tabs = {},
 		settings = {
 			directory = ""..options.Name.."/Config/".. options.Game.."",
@@ -1777,7 +1808,29 @@ function library.new(options)
 	}, library)
 	getgenv().UiName = options.Name
 	getgenv().GameName = options.Game
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Vestra-Tech/Rblx/main/Utility/Init.lua"))()
+	if not isfolder(UiName) then
+        makefolder(UiName)
+    end
+	if not isfolder(UiName.."\\Config") then
+        makefolder(UiName.."\\Config")
+	end
+	if not isfolder(UiName.."\\Config\\"..GameName) then
+        makefolder(UiName.."\\Config\\"..GameName)
+    end
+	if not isfolder(UiName.."\\Utility") then
+        makefolder(UiName.."\\Utility")
+	end
+	if not isfile(UiName.."\\Utility\\Client.lua") then
+	   writefile(UiName.."\\Utility\\Client.lua", game:HttpGet("https://raw.githubusercontent.com/VestraTech/Vestra/main/Roblox/Utilities/Client.lua"))
+	end
+	if not isfolder(UiName.."\\Utility\\Sounds") then
+        makefolder(UiName.."\\Utility\\Sounds")
+	end
+	for i,v in pairs(SoundNames) do
+		if not isfile(UiName.."\\Utility\\Sounds\\"..v..".mp3") then
+			writefile(UiName.."\\Utility\\Sounds\\"..v..".mp3", game:HttpGet("https://raw.githubusercontent.com/VestraTech/Vestra/main/Roblox/Utilities/Sounds/"..v..".mp3"))
+		end
+	end
 	newlibrary.gui = create("ScreenGui", { 
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling, 
 		Name = UiName, 
@@ -1948,7 +2001,7 @@ function library.new(options)
 	userinputservice.InputBegan:Connect(function(input)
         if newlibrary.settings.binding == false and userinputservice:GetFocusedTextBox() == nil then
             local name = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode.Name or input.UserInputType.Name
-            for i, v in next, newlibrary.items do
+            for i, v in next, newlibrary.Items do
                 if v.itemtype == "bind" and newlibrary.Flags[v.Flag] == name then
                     v.Keydown()
                 end
@@ -1959,7 +2012,7 @@ function library.new(options)
     userinputservice.InputEnded:Connect(function(input)
         if newlibrary.settings.binding == false and userinputservice:GetFocusedTextBox() == nil then
             local name = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode.Name or input.UserInputType.Name
-            for i, v in next, newlibrary.items do
+            for i, v in next, newlibrary.Items do
                 if v.itemtype == "bind" and newlibrary.Flags[v.Flag] == name then
                     v.Keyup()
                 end
@@ -2022,7 +2075,7 @@ function library:LoadConfig(name)
 		local succ, json = pcall(httpservice.JSONDecode, httpservice, readfile(path))
 		if succ then
 			for i, v in next, json do
-				local item = self.items[i]
+				local item = self.Items[i]
 				if item then
 					if item.itemtype == "picker" then
 						task.spawn(item.set, item, v.h, v.s, v.v)
@@ -2046,7 +2099,7 @@ function library:SaveConfig(name)
 	end
 	local Flags = {}
 	for i, v in next, self.Flags do
-		if self.items[i] and not self.items[i].ignore then
+		if self.Items[i] and not self.Items[i].ignore then
 			Flags[i] = v
 		end
 	end
@@ -2059,7 +2112,7 @@ function library:delconfig(name)
 	end
 	local Flags = {}
 	for i, v in next, self.Flags do
-		if self.items[i] and not self.items[i].ignore then
+		if self.Items[i] and not self.Items[i].ignore then
 			Flags[i] = v
 		end
 	end
@@ -2275,7 +2328,7 @@ end
 function library:AddSettings()
 	local settingstab = self:AddTab({ Content = "Settings", Icon = 9134709197 })
     local configs = settingstab:AddSection({ Content = "Configs",Open = true})
-    configs:AddDropdown({ Content = "Config List", Flag = "ConfigName", items = library:GetConfigs()})
+    configs:AddDropdown({ Content = "Config List", Flag = "ConfigName", Items = library:GetConfigs()})
     configs:AddTextBox({ Content = "Save File Name", Flag = "SaveFileName", ignore = true })
     configs:AddButton({ Content = "Load Config", Flag = "LoadConfig", Callback = function()
         if not self:LoadConfig(self.Flags.ConfigName) then
@@ -2283,7 +2336,7 @@ function library:AddSettings()
         end
     end })
     configs:AddButton({ Content = "Create Config", Flag = "SaveConfig", Callback = function()
-        self.items.ConfigName:additem(self.Flags.SaveFileName)
+        self.Items.ConfigName:additem(self.Flags.SaveFileName)
     end })
     configs:AddButton({ Content = "Save Config", Flag = "SaveConfig", Callback = function()
         if self.Flags.ConfigName then
@@ -2295,26 +2348,26 @@ function library:AddSettings()
         if self.Flags.ConfigName then
             self:delconfig(self.Flags.ConfigName)
             self:Notify({ Content = "Deleted the config " .. self.Flags.ConfigName .. "" })
-            self.items.ConfigName:removeitem(self.Flags.ConfigName)
+            self.Items.ConfigName:removeitem(self.Flags.ConfigName)
         end
     end })
-    local themeitems = settingstab:AddSection({ Content = "Theme",Open = true, Right = true })
-	themeitems:AddColourPicker({ Content = "Main Background", Flag = "thememainbackground", Default = theme.mainbackground, Callback = function(Colour)
+    local themeItems = settingstab:AddSection({ Content = "Theme",Open = true, Right = true })
+	themeItems:AddColourPicker({ Content = "Main Background", Flag = "thememainbackground", Default = theme.mainbackground, Callback = function(Colour)
 		self.settings.theme.mainbackground = Colour
 	end	})
-	themeitems:AddColourPicker({ Content = "Title Background", Flag = "themetitlebackground", Default = theme.titlebackground, Callback = function(Colour)
+	themeItems:AddColourPicker({ Content = "Title Background", Flag = "themetitlebackground", Default = theme.titlebackground, Callback = function(Colour)
 		self.settings.theme.titlebackground = Colour
 	end	})
-	themeitems:AddColourPicker({ Content = "List Background", Flag = "themeleftbackground", Default = theme.leftbackground, Callback = function(Colour)
+	themeItems:AddColourPicker({ Content = "List Background", Flag = "themeleftbackground", Default = theme.leftbackground, Callback = function(Colour)
 		self.settings.theme.leftbackground = Colour
 	end	})
-	themeitems:AddColourPicker({ Content = "Section Background", Flag = "themesectionbackground", Default = theme.sectionbackground, Callback = function(Colour)
+	themeItems:AddColourPicker({ Content = "Section Background", Flag = "themesectionbackground", Default = theme.sectionbackground, Callback = function(Colour)
 		self.settings.theme.sectionbackground = Colour
 	end	})
-	themeitems:AddColourPicker({ Content = "Foreground", Flag = "themeforeground", Default = theme.foreground, Callback = function(Colour)
+	themeItems:AddColourPicker({ Content = "Foreground", Flag = "themeforeground", Default = theme.foreground, Callback = function(Colour)
 		self.settings.theme.foreground = Colour
 	end	})
-	themeitems:AddColourPicker({ Content = "Highlight", Flag = "themehighlight", Default = theme.highlight, Callback = function(Colour)
+	themeItems:AddColourPicker({ Content = "Highlight", Flag = "themehighlight", Default = theme.highlight, Callback = function(Colour)
 		self.settings.theme.highlight = Colour
 	end	})
     local uioptions = settingstab:AddSection({ Content = "UI Options", Open = true , left = true })
@@ -2334,7 +2387,6 @@ function library:AddSettings()
 	local Credits = settingstab:AddSection({ Content = "Credits" , Open = true,Right = true })
     Credits:AddLabel({ Content = "xandu#5980", Flag = "Credit1"})
     Credits:AddLabel({ Content = "Shots#3345", Flag = "Credit2"})
-
     self:LoadConfig("Default")
 end
 --[[ Return ]]--

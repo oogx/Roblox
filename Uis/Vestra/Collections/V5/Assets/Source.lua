@@ -2385,8 +2385,8 @@ function library:AddSettings()
 		self:Destroy()
 	end })
 	local Credits = settingstab:AddSection({ Content = "Credits" , Open = true,Right = true })
-    Credits:AddLabel({ Content = "Discord - peepingonya", Flag = "Credit1"})
-    Credits:AddLabel({ Content = "Discord - kongox", Flag = "Credit2"})
+    Credits:AddLabel({ Content = "Discord - PeepingOnYa", Flag = "Credit1"})
+    Credits:AddLabel({ Content = "Discord - Kongox", Flag = "Credit2"})
     self:LoadConfig("Default")
 end
 --[[ Return ]]--

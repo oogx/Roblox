@@ -1817,20 +1817,6 @@ function library.new(options)
 	if not isfolder(UiName.."\\Config\\"..GameName) then
         makefolder(UiName.."\\Config\\"..GameName)
     end
-	if not isfolder(UiName.."\\Utility") then
-        makefolder(UiName.."\\Utility")
-	end
-	if not isfile(UiName.."\\Utility\\Client.lua") then
-	   writefile(UiName.."\\Utility\\Client.lua", game:HttpGet("https://raw.githubusercontent.com/VestraTech/Vestra/main/Roblox/Utilities/Client.lua"))
-	end
-	if not isfolder(UiName.."\\Utility\\Sounds") then
-        makefolder(UiName.."\\Utility\\Sounds")
-	end
-	for i,v in pairs(SoundNames) do
-		if not isfile(UiName.."\\Utility\\Sounds\\"..v..".mp3") then
-			writefile(UiName.."\\Utility\\Sounds\\"..v..".mp3", game:HttpGet("https://raw.githubusercontent.com/VestraTech/Vestra/main/Roblox/Utilities/Sounds/"..v..".mp3"))
-		end
-	end
 	newlibrary.gui = create("ScreenGui", { 
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling, 
 		Name = UiName, 

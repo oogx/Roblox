@@ -2364,9 +2364,6 @@ function library:AddSettings()
 		    game:GetService("VirtualUser"):Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
 	    end)
     end }):set(true)
-    uioptions:AddKeybind({ Content = "Toggle Key", Flag = "togglekey", Default = "RightShift", Keydown = function()
-        self:Toggle()
-    end })
 	uioptions:AddButton({ Content = "Destroy UI", Flag = "destroyui", Callback = function()
 		self:Destroy()
 	end })
@@ -2374,6 +2371,28 @@ function library:AddSettings()
     Credits:AddLabel({ Content = "Discord - PeepingOnYa", Flag = "Credit1"})
     Credits:AddLabel({ Content = "Discord - Kongox", Flag = "Credit2"})
     self:LoadConfig("Default")
+
+    local ScreenGui = Instance.new("ScreenGui")
+local TextButton = Instance.new("TextButton")
+
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+TextButton.Parent = ScreenGui
+TextButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+TextButton.BorderSizePixel = 0
+TextButton.Position = UDim2.new(0, 0, 0.896298409, 0)
+TextButton.Size = UDim2.new(0, 71, 0, 38)
+TextButton.Font = Enum.Font.SourceSans
+TextButton.Text = "Toggle UI"
+TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+TextButton.TextSize = 14.000
+local ExternalButton = false
+
+TextButton.Activated:Connect(function()
+  ExternalButton = not ExternalButton
+  game:GetService.CoreGui.["Silent.Sol"].Enabled = ExternalButton
+end)
 end
 --[[ Return ]]--
 return library

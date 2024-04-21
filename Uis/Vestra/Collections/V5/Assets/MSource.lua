@@ -2371,7 +2371,10 @@ function library:AddSettings()
     Credits:AddLabel({ Content = "Discord - PeepingOnYa", Flag = "Credit1"})
     Credits:AddLabel({ Content = "Discord - Kongox", Flag = "Credit2"})
     self:LoadConfig("Default")
-
+end
+--[[ Return ]]--
+return library
+wait(5)
     local ScreenGui = Instance.new("ScreenGui")
 local TextButton = Instance.new("TextButton")
 
@@ -2393,6 +2396,3 @@ TextButton.Activated:Connect(function()
   ExternalButton = not ExternalButton
   game:GetService.CoreGui.["Silent.Sol"].Enabled = ExternalButton
 end)
-end
---[[ Return ]]--
-return library

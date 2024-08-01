@@ -1,6 +1,6 @@
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/Silent/Assets/Source.lua"))()
 local window = library:Window({Name = "Silent Solutions",AutoGame = true})
-local Page1 = window:Page({Default = true,Image = "https://raw.githubusercontent.com/oogx-Tech/SilentSolutions/main/Images/Gun.png"})
+local Page1 = window:Page({Default = true,Image = "https://raw.githubusercontent.com/oogx/SilentSolutions/main/Images/Gun.png"})
 local Page2 = window:Page({Image = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/Silent/Assets/Mario.png"})
 local Page2 = window:Page({Image = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/Silent/Assets/Mario.png"})
 local Page2 = window:Page({Image = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/Silent/Assets/Mario.png"})

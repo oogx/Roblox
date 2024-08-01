@@ -1,9 +1,9 @@
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/Silent/Assets/Source.lua"))()
 local window = library:Window({Name = "Silent Solutions",AutoGame = true})
-local Page1 = window:Page({Default = true,Image = "https://raw.githubusercontent.com/Vestra-Tech/SilentSolutions/main/Images/Gun.png"})
-local Page2 = window:Page({Image = "https://raw.githubusercontent.com/VestraTech/Roblox/main/Uis/Drawing/Silent/Assets/Mario.png"})
-local Page2 = window:Page({Image = "https://raw.githubusercontent.com/VestraTech/Roblox/main/Uis/Drawing/Silent/Assets/Mario.png"})
-local Page2 = window:Page({Image = "https://raw.githubusercontent.com/VestraTech/Roblox/main/Uis/Drawing/Silent/Assets/Mario.png"})
+local Page1 = window:Page({Default = true,Image = "https://raw.githubusercontent.com/oogx-Tech/SilentSolutions/main/Images/Gun.png"})
+local Page2 = window:Page({Image = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/Silent/Assets/Mario.png"})
+local Page2 = window:Page({Image = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/Silent/Assets/Mario.png"})
+local Page2 = window:Page({Image = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/Silent/Assets/Mario.png"})
 local Section1 = Page1:Section({Name = "Section 1",Side = "Left",Size = 300})
 local Section2 = Page1:Section({Name = "Section 2",Side = "Right",Size = "Fill"})
 

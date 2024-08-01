@@ -1,6 +1,6 @@
 -- custom tween | made by vozoid just incase of deletion
 
-local Signal = loadstring(game:HttpGet("https://raw.githubusercontent.com/VestraTech/Roblox/main/Utility/Drawing/Signal.lua"))()
+local Signal = loadstring(game:HttpGet("https://raw.githubusercontent.com/oogx/Roblox/main/Utility/Drawing/Signal.lua"))()
 
 local render = game:GetService("RunService").RenderStepped
 local sqrt, sin, pi, halfpi, doublepi = math.sqrt, math.sin, math.pi, math.pi / 2, math.pi * 2

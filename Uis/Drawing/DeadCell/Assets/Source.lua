@@ -27,19 +27,19 @@ if not isfolder(library.folder) then
     makefolder(library.folder.."/Configs")
     makefolder(library.folder.."/Assets")
     makefolder(library.folder.."/Utility")
-    writefile(library.folder.."/Utility/Extension.lua",game:HttpGet("https://raw.githubusercontent.com/VestraTech/Roblox/main/Utility/Drawing/Extension.lua"))
-    writefile(library.folder.."/Utility/Tween.lua",game:HttpGet("https://raw.githubusercontent.com/VestraTech/Roblox/main/Utility/Drawing/Tween.lua"))
+    writefile(library.folder.."/Utility/Extension.lua",game:HttpGet("https://raw.githubusercontent.com/oogx/Roblox/main/Utility/Drawing/Extension.lua"))
+    writefile(library.folder.."/Utility/Tween.lua",game:HttpGet("https://raw.githubusercontent.com/oogx/Roblox/main/Utility/Drawing/Tween.lua"))
 end
 local drawing = loadstring(readfile(tostring(library.folder.."/Utility/Extension.lua")))()
 local tween = loadstring(readfile(tostring(library.folder.."/Utility/Tween.lua")))()
 local themeobjects = {}
 local images = {
-    ['gradient1'] = "https://raw.githubusercontent.com/VestraTech/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Gradient1.png",
-    ['gradient180'] = "https://raw.githubusercontent.com/VestraTech/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Gradient2.png",
-    ['gradient3'] = "https://raw.githubusercontent.com/VestraTech/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Gradient3.png",
-    ['gradient4'] = "https://raw.githubusercontent.com/VestraTech/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Gradient4.png",
-    ['down'] = "https://raw.githubusercontent.com/VestraTech/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Down.png",
-    ['up'] = "https://raw.githubusercontent.com/VestraTech/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Up.png",
+    ['gradient1'] = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Gradient1.png",
+    ['gradient180'] = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Gradient2.png",
+    ['gradient3'] = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Gradient3.png",
+    ['gradient4'] = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Gradient4.png",
+    ['down'] = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Down.png",
+    ['up'] = "https://raw.githubusercontent.com/oogx/Roblox/main/Uis/Drawing/DeadCell/Assets/Images/Up.png",
 }
 library.gradient1 = images.gradient1
 library.screengui = Instance.new('ScreenGui')

@@ -2372,6 +2372,7 @@ function library:AddSettings()
 	local Credits = settingstab:AddSection({ Content = "Credits" , Open = true,Right = true })
     Credits:AddLabel({ Content = "Discord - xidm", Flag = "Credit1"})
     Credits:AddLabel({ Content = "Discord - ssol_shots", Flag = "Credit2"})
+	Credits:AddLabel({ Content = "Discord Server: discord.gg/XusxW2HFKG", Flag = "Credit3"})
     self:LoadConfig("Default")
 end
 --[[ Return ]]--

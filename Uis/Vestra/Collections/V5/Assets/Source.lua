@@ -12,18 +12,6 @@ local emptybindsize = textservice:GetTextSize("None", 12, Enum.Font.Gotham, huge
 local ellipsisbindsize = textservice:GetTextSize("...", 12, Enum.Font.Gotham, hugevec2).X + 12
 local placeholderboxsize = textservice:GetTextSize("Enter Text...", 12, Enum.Font.Gotham, hugevec2).X + 12
 
-local SoundNames = {
-	"Android",
-	"Bonk",
-	"CsgoHeadshot",
-	"Goof",
-	"Headshot",
-	"HitMarker",
-	"Phonk",
-	"Punch",
-	"Slap",
-}
-
 local blacklistedkeys = {
 	[Enum.KeyCode.Unknown] = true
 }
@@ -31,7 +19,8 @@ local blacklistedkeys = {
 local whitelistedtypes = { 
 	[Enum.UserInputType.MouseButton1] = true,
 	[Enum.UserInputType.MouseButton2] = true,
-	[Enum.UserInputType.MouseButton3] = true
+	[Enum.UserInputType.MouseButton3] = true,
+	[Enum.UserInputType.Touch] = true,	
 }
 
 local theme = setmetatable({
@@ -270,9 +259,12 @@ function button.new(Content, Callback)
 		})
 	})
 	
-	newbutton.frame.MouseButton1Down:Connect(function()
-		task.spawn(ripple, newbutton.frame)
-		newbutton:fire()
+	newbutton.frame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+
+			task.spawn(ripple, newbutton.frame)
+			newbutton:fire()
+		end
 	end)
 	
 	return newbutton
@@ -336,7 +328,7 @@ function toggle.new(Content, Callback)
 	})
 	
 	newtoggle.frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			newtoggle:switch()
 		end
 	end)
@@ -414,7 +406,7 @@ function bind.new(Content, Keydown, Keyup, keychanged)
 	})
 
 	newbind.frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 and newbind.library.settings.binding == false then
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and newbind.library.settings.binding == false then
 			newbind.library.settings.binding = true
 			newbind.frame.indicator.Size = UDim2.new(0, ellipsisbindsize, 1, 0)
 			newbind.frame.indicator.Text = "..."
@@ -550,7 +542,7 @@ function slider.new(Content, Min, Max, Float, Prefix, Suffix, Callback)
 	})
 
 	newslider.frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 and newslider.library.settings.dragging == false then
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and newslider.library.settings.dragging == false then
             newslider.library.settings.dragging = true
             local slideconn; slideconn = mouse.Move:Connect(function()
 				newslider:set(newslider.Min + ((newslider.Max - newslider.Min) * ((mouse.X - newslider.frame.container.track.AbsolutePosition.X) / newslider.frame.container.track.AbsoluteSize.X)))
@@ -684,7 +676,7 @@ function box.new(Content, NumberOnly, Callback)
 	end)
 
     newbox.frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             newbox.frame.outline.input:CaptureFocus()
         end
     end)
@@ -1006,7 +998,7 @@ function picker.new(Content, Callback)
 	})
 	
 	newpicker.frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 and mouse.Y - newpicker.frame.AbsolutePosition.Y < 24 then
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and mouse.Y - newpicker.frame.AbsolutePosition.Y < 24 then
 			if newpicker.settings.open then
 				newpicker:close()
 			else
@@ -1016,7 +1008,7 @@ function picker.new(Content, Callback)
 	end)
 
 	newpicker.frame.container.hue.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 and newpicker.library.settings.dragging == false then
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and newpicker.library.settings.dragging == false then
             newpicker.library.settings.dragging = true
             if newpicker.library.Flags[newpicker.Flag].rainbow then
                 newpicker:setrainbow(false)
@@ -1035,7 +1027,7 @@ function picker.new(Content, Callback)
     end)
 
     newpicker.frame.container.sat.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 and newpicker.library.settings.dragging == false then
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and newpicker.library.settings.dragging == false then
             newpicker.library.settings.dragging = true
             local moveconn; moveconn = mouse.Move:Connect(function()
                 newpicker:set(newpicker.library.Flags[newpicker.Flag].h, math.clamp((mouse.X - newpicker.frame.container.sat.AbsolutePosition.X) / newpicker.frame.container.sat.AbsoluteSize.X, 0, 1), 1 - math.clamp((mouse.Y - newpicker.frame.container.sat.AbsolutePosition.Y) / newpicker.frame.container.sat.AbsoluteSize.Y, 0, 1))
@@ -1081,7 +1073,7 @@ function picker.new(Content, Callback)
     end)
 
 	newpicker.frame.container.rainbow.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             newpicker:setrainbow(not newpicker.library.Flags[newpicker.Flag].rainbow)
         end
     end)
@@ -1273,7 +1265,7 @@ function dropdown.new(Content, Callback)
 	})
 
 	newdropdown.frame.drop.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 and mouse.Y - newdropdown.frame.drop.AbsolutePosition.Y < 24 then
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and mouse.Y - newdropdown.frame.drop.AbsolutePosition.Y < 24 then
 			if newdropdown.settings.open then
 				newdropdown:close()
 			else
@@ -1350,9 +1342,12 @@ function dropdown:additem(item)
 		})
 	})
 
-	btn.MouseButton1Click:Connect(function()
-		self:set(item)
+	btn.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			self:set(item)
+		end
 	end)
+
 
 	if self.settings.open then
 		tween(self.frame, 0.25, { Size = UDim2.new(1, 0, 0, math.min(58 + ((#self.frame.drop.container.background.container.holder:GetChildren() - 1) * 22), 146)) })
@@ -1476,7 +1471,7 @@ function section.new(Content)
     end)
 	
 	newsection.frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 and mouse.Y - newsection.frame.AbsolutePosition.Y < 34 then
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and mouse.Y - newsection.frame.AbsolutePosition.Y < 34 then
 			if newsection.settings.open then
 				newsection:Close()
 			else
@@ -2047,7 +2042,7 @@ function library:AddTab(options)
 	end
 
 	newtab.indicator.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 and self.selected ~= newtab then
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and self.selected ~= newtab then
 			self:ShowTab(options.Content)
 		end
 	end)
@@ -2252,12 +2247,16 @@ function library:Notify(options)
 		end
     end
 	
-	notification.top.yes.MouseButton1Down:Connect(function()
-		closenotif(true)
+	notification.top.yes.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			closenotif(true)
+		end
 	end)
-	
-	notification.top.no.MouseButton1Down:Connect(function()
-		closenotif(false)
+
+	notification.top.no.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			closenotif(false)
+		end
 	end)
 	
 	self:OrderNotifications()
@@ -2280,7 +2279,7 @@ end
 
 function library:MakeDraggable(frame)
 	frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 and self.settings.dragging == false then
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and self.settings.dragging == false then
 			self.settings.dragging = true
 			local offset = Vector2.new(frame.AbsoluteSize.X * frame.AnchorPoint.X, frame.AbsoluteSize.Y * frame.AnchorPoint.Y)
 			local pos = Vector2.new(mouse.X - (frame.AbsolutePosition.X + offset.X), mouse.Y - (frame.AbsolutePosition.Y + offset.Y))

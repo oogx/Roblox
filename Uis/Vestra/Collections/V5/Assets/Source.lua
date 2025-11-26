@@ -2320,8 +2320,11 @@ function library:AddSettings()
             self:Notify({ Content = "No valid config with the name '" .. self.Flags.ConfigName .. "' was found" })
         end
     end })
+	Credits:AddLabel({ Content = "To auto load configs please name the config Default and that will auto load on execute.", Flag = "ConfigText"})
     configs:AddButton({ Content = "Create Config", Flag = "SaveConfig", Callback = function()
         self.Items.ConfigName:additem(self.Flags.SaveFileName)
+		self:SaveConfig(self.Flags.ConfigName)
+		self:Notify({ Content = "Creatd and saved the config " .. self.Flags.ConfigName .. "" })
     end })
     configs:AddButton({ Content = "Save Config", Flag = "SaveConfig", Callback = function()
         if self.Flags.ConfigName then

@@ -1388,10 +1388,378 @@ function dropdown:UpdateTable(table)
         self:additem(v)
     end
 end
+local multiselectdropdown = {}
+multiselectdropdown.__index = multiselectdropdown
+
+function multiselectdropdown.new(Content, Items, Callback)
+    local newdropdown = setmetatable({
+        itemtype = "multiselectdropdown",
+        Content = Content,
+        Items = Items or {},
+        Callback = Callback or function() end,
+        selected = {},
+        settings = {
+            open = false
+        }
+    }, multiselectdropdown)
+    
+    newdropdown.frame = create("Frame", { 
+        BackgroundColor3 = Color3.new(1, 1, 1), 
+        BackgroundTransparency = 1, 
+        Size = UDim2.new(1, 0, 0, 48), 
+        Name = Content
+    }, {
+        create("TextLabel", { 
+            Theme = {
+                TextColor3 = "foreground"
+            },
+            Font = Enum.Font.Gotham, 
+            FontSize = Enum.FontSize.Size14, 
+            Text = Content, 
+            TextSize = 13, 
+            TextWrap = true, 
+            TextWrapped = true, 
+            TextXAlignment = Enum.TextXAlignment.Left, 
+            BackgroundColor3 = Color3.new(1, 1, 1), 
+            BackgroundTransparency = 1, 
+            Size = UDim2.new(1, 0, 0, 24), 
+            Name = "label"
+        }),
+        create("Frame", {
+            Theme = {
+                BackgroundColor3 = "mainbackground"
+            },
+            AnchorPoint = Vector2.new(0, 1), 
+            ClipsDescendants = true, 
+            Position = UDim2.new(0, 0, 1, 0), 
+            Size = UDim2.new(1, 0, 1, -24), 
+            Name = "drop"
+        }, {
+            create("UICorner", { 
+                CornerRadius = UDim.new(0, 4), 
+                Name = "corner"
+            }),
+            create("TextLabel", { 
+                Theme = {
+                    TextColor3 = "foreground"
+                },
+                Font = Enum.Font.Gotham, 
+                FontSize = Enum.FontSize.Size12, 
+                Text = "None selected", 
+                TextSize = 12, 
+                TextXAlignment = Enum.TextXAlignment.Left, 
+                BackgroundColor3 = Color3.new(1, 1, 1), 
+                BackgroundTransparency = 1, 
+                Position = UDim2.new(0, 6, 0, 0), 
+                Size = UDim2.new(1, -38, 0, 24), 
+                Name = "selected"
+            }),
+            create("TextLabel", {
+                Theme = {
+                    TextColor3 = "foreground"
+                },
+                Font = Enum.Font.Gotham, 
+                FontSize = Enum.FontSize.Size14, 
+                Text = "▼", 
+                TextSize = 13, 
+                TextWrap = true, 
+                TextWrapped = true, 
+                AnchorPoint = Vector2.new(1, 0), 
+                BackgroundColor3 = Color3.new(1, 1, 1), 
+                BackgroundTransparency = 1, 
+                Position = UDim2.new(1, -2, 0, 0), 
+                Size = UDim2.new(0, 24, 0, 24), 
+                Name = "indicator"
+            }),
+            create("Frame", { 
+                AnchorPoint = Vector2.new(0.5, 0), 
+                BackgroundColor3 = Color3.new(1, 1, 1), 
+                BackgroundTransparency = 1, 
+                ClipsDescendants = true, 
+                Position = UDim2.new(0.5, 0, 0, 24), 
+                Size = UDim2.new(1, -8, 0, 0), 
+                Name = "container"
+            }, {
+                create("Frame", { 
+                    Theme = {
+                        BackgroundColor3 = "sectionbackground"
+                    },
+                    Size = UDim2.new(1, 0, 1, 0), 
+                    Name = "background"
+                }, {
+                    create("UICorner", { 
+                        CornerRadius = UDim.new(0, 4), 
+                        Name = "corner"
+                    }),
+                    create("ScrollingFrame", { 
+                        CanvasSize = UDim2.new(0, 0, 0, 0), 
+                        ScrollBarImageColor3 = Color3.new(0, 0, 0), 
+                        ScrollBarImageTransparency = 1, 
+                        ScrollBarThickness = 0, 
+                        Active = true, 
+                        AnchorPoint = Vector2.new(0.5, 0.5), 
+                        BackgroundColor3 = Color3.new(1, 1, 1), 
+                        BackgroundTransparency = 1, 
+                        BorderSizePixel = 0, 
+                        ClipsDescendants = true, 
+                        Position = UDim2.new(0.5, 0, 0.5, 0), 
+                        Size = UDim2.new(1, -8, 1, -8), 
+                        Name = "scrollcontainer"
+                    }, {
+                        create("Frame", { 
+                            AnchorPoint = Vector2.new(0.5, 0), 
+                            BackgroundColor3 = Color3.new(1, 1, 1), 
+                            BackgroundTransparency = 1, 
+                            ClipsDescendants = true, 
+                            Position = UDim2.new(0.5, 0, 0, 0), 
+                            Size = UDim2.new(1, 0, 0, 86), 
+                            Name = "holder"
+                        }, {
+                            create("UIListLayout", { 
+                                Padding = UDim.new(0, 2), 
+                                SortOrder = Enum.SortOrder.LayoutOrder, 
+                                Name = "layout"
+                            })
+                        })
+                    })
+                })
+            })
+        })
+    })
+    
+    newdropdown.frame.drop.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and mouse.Y - newdropdown.frame.drop.AbsolutePosition.Y < 24 then
+            if newdropdown.settings.open then
+                newdropdown:close()
+            else
+                newdropdown:open()
+            end
+        end
+    end)
+    
+    local container = newdropdown.frame.drop.container.background.scrollcontainer
+    container.holder.ChildAdded:Connect(function()
+        container.holder.Size = UDim2.new(1, 0, 0, (#container.holder:GetChildren() - 1) * 22 - 2)
+    end)
+    
+    local list = container.holder.layout
+    list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        container.CanvasSize = UDim2.new(0, 0, 0, list.AbsoluteContentSize.Y)
+    end)
+    
+    customscroll(container.holder, container, 22)
+    
+    -- Populate items
+    for i, v in ipairs(Items) do
+        newdropdown:additem(v)
+    end
+    
+    return newdropdown
+end
+
+function multiselectdropdown:open()
+    self.settings.open = true
+    tween(self.frame, 0.25, { Size = UDim2.new(1, 0, 0, math.min(58 + ((#self.frame.drop.container.background.scrollcontainer.holder:GetChildren() - 1) * 22), 146)) })
+    tween(self.frame.drop.container, 0.25, { Size = UDim2.new(1, -8, 1, -28) })
+    tween(self.frame.drop.indicator, 0.25, { Rotation = 360 })
+end
+
+function multiselectdropdown:close()
+    self.settings.open = false
+    tween(self.frame, 0.25, { Size = UDim2.new(1, 0, 0, 48) })
+    tween(self.frame.drop.container, 0.25, { Size = UDim2.new(1, -8, 0, 0) })
+    tween(self.frame.drop.indicator, 0.25, { Rotation = 0 })
+end
+
+function multiselectdropdown:additem(item)
+    local name = tostring(item)
+    local btn = create("Frame", { 
+        BackgroundTransparency = 1,
+        Parent = self.frame.drop.container.background.scrollcontainer.holder,
+        Size = UDim2.new(1, 0, 0, 20), 
+        Name = name
+    }, {
+        create("Frame", { 
+            Theme = {
+                BackgroundColor3 = function()
+                    return self.selected[name] and "highlight" or "mainbackground"
+                end
+            },
+            Size = UDim2.new(1, 0, 1, 0), 
+            Name = "background"
+        }, {
+            create("UICorner", { 
+                CornerRadius = UDim.new(0, 4), 
+                Name = "corner"
+            })
+        }),
+        create("TextLabel", { 
+            Theme = {
+                TextColor3 = "foreground"
+            },
+            Font = Enum.Font.Gotham, 
+            FontSize = Enum.FontSize.Size12, 
+            Text = name, 
+            TextSize = 12, 
+            TextXAlignment = Enum.TextXAlignment.Left, 
+            BackgroundColor3 = Color3.new(1, 1, 1), 
+            BackgroundTransparency = 1, 
+            Position = UDim2.new(0, 24, 0, 0), 
+            Size = UDim2.new(1, -28, 1, 0), 
+            Name = "label"
+        }),
+        create("TextLabel", { 
+            Font = Enum.Font.Gotham, 
+            FontSize = Enum.FontSize.Size12, 
+            Text = self.selected[name] and "✓" or "", 
+            TextSize = 12, 
+            TextColor3 = Color3.new(1, 1, 1), 
+            TextXAlignment = Enum.TextXAlignment.Left, 
+            BackgroundTransparency = 1, 
+            Position = UDim2.new(0, 4, 0, 0), 
+            Size = UDim2.new(0, 20, 1, 0), 
+            Name = "checkmark"
+        })
+    })
+    
+    btn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            self:toggleitem(item)
+        end
+    end)
+
+    if self.settings.open then
+        tween(self.frame, 0.25, { Size = UDim2.new(1, 0, 0, math.min(58 + ((#self.frame.drop.container.background.scrollcontainer.holder:GetChildren() - 1) * 22), 146)) })
+    end
+end
+
+function multiselectdropdown:toggleitem(item)
+    local name = tostring(item)
+    self.selected[name] = not self.selected[name]
+    
+    -- Update visual state
+    local itemFrame = self.frame.drop.container.background.scrollcontainer.holder:FindFirstChild(name)
+    if itemFrame then
+        tween(itemFrame.background, 0.25, { 
+            BackgroundColor3 = self.selected[name] and theme.highlight or theme.mainbackground 
+        })
+        itemFrame.checkmark.Text = self.selected[name] and "✓" or ""
+    end
+    
+    -- Get selected items as array
+    local selectedArray = {}
+    for selectedName, isSelected in pairs(self.selected) do
+        if isSelected then
+            table.insert(selectedArray, selectedName)
+        end
+    end
+    
+    -- Update label to show count
+    if #selectedArray > 0 then
+        self.frame.drop.selected.Text = #selectedArray .. " item(s) selected"
+        self.library.Flags[self.Flag] = selectedArray
+    else
+        self.frame.drop.selected.Text = "None selected"
+        self.library.Flags[self.Flag] = {}
+    end
+    
+    -- Call callback
+    self.Callback(selectedArray)
+end
+
+function multiselectdropdown:getselected()
+    local selectedArray = {}
+    for name, isSelected in pairs(self.selected) do
+        if isSelected then
+            table.insert(selectedArray, name)
+        end
+    end
+    return selectedArray
+end
+
+function multiselectdropdown:setselected(items)
+    -- Clear current selections
+    self.selected = {}
+    
+    -- Set new selections
+    if items then
+        for _, item in ipairs(items) do
+            self.selected[tostring(item)] = true
+        end
+    end
+    
+    -- Update visual state
+    for _, child in pairs(self.frame.drop.container.background.scrollcontainer.holder:GetChildren()) do
+        if child:IsA("Frame") and child.Name ~= "layout" then
+            local name = child.Name
+            tween(child.background, 0.25, { 
+                BackgroundColor3 = self.selected[name] and theme.highlight or theme.mainbackground 
+            })
+            child.checkmark.Text = self.selected[name] and "✓" or ""
+        end
+    end
+    
+    -- Update label
+    if items and #items > 0 then
+        self.frame.drop.selected.Text = #items .. " item(s) selected"
+        self.library.Flags[self.Flag] = items
+    else
+        self.frame.drop.selected.Text = "None selected"
+        self.library.Flags[self.Flag] = {}
+    end
+end
+
+function multiselectdropdown:removeitem(item)
+    local name = tostring(item)
+    local listitem = self.frame.drop.container.background.scrollcontainer.holder:FindFirstChild(name)
+    if listitem then
+        listitem:Destroy()
+        self.selected[name] = nil
+        
+        -- Update flag
+        local selectedArray = self:getselected()
+        self.library.Flags[self.Flag] = selectedArray
+        
+        if #selectedArray > 0 then
+            self.frame.drop.selected.Text = #selectedArray .. " item(s) selected"
+        else
+            self.frame.drop.selected.Text = "None selected"
+        end
+        
+        if self.settings.open then
+            tween(self.frame, 0.25, { Size = UDim2.new(1, 0, 0, math.min(58 + ((#self.frame.drop.container.background.scrollcontainer.holder:GetChildren() - 1) * 22), 146)) })
+        end
+    end
+end
+
+local function removeDuplicatesMulti(arr)
+    local newArray = {}
+    local checkerTbl = {}
+    for _,element in ipairs(arr) do
+        if not checkerTbl[element] then
+            checkerTbl[element] = true
+            table.insert(newArray, element)
+        end
+    end
+    return newArray
+end
+
+function multiselectdropdown:updatetable(table)
+    for i,v in pairs(self.frame.drop.container.background.scrollcontainer.holder:GetChildren()) do
+        if v.ClassName == "Frame" and v.Name ~= "layout" then
+            self:removeitem(v.Name)
+        end
+    end
+    for i,v in pairs(removeDuplicatesMulti(table)) do
+        self:additem(v)
+    end
+end
+
 --[[ Section ]]--
 
 local section = {}
 section.__index = section
+
 
 function section.new(Content)
 	local newsection = setmetatable({
@@ -1482,6 +1850,8 @@ function section.new(Content)
 
 	return newsection
 end
+
+
 
 function section:Open()
 	self.settings.open = true
@@ -1643,6 +2013,23 @@ function section:AddDropdown(options)
 	end
 	
 	return newdropdown
+end
+
+function section:AddMultiSelectDropdown(options)
+    local newdropdown = multiselectdropdown.new(options.Content, options.Items, options.Callback)
+
+    newdropdown.frame.Parent = self.frame.container
+    newdropdown.library = self.library
+    newdropdown.Flag = options.Flag
+    newdropdown.ignore = options.ignore
+    self.library.Flags[options.Flag] = {}
+    self.library.Items[options.Flag] = newdropdown
+    
+    if options.Default then
+        newdropdown:setselected(options.Default)
+    end
+    
+    return newdropdown
 end
 
 --[[ Tab ]]--

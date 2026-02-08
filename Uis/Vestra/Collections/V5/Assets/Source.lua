@@ -12,6 +12,9 @@ local emptybindsize = textservice:GetTextSize("None", 12, Enum.Font.Gotham, huge
 local ellipsisbindsize = textservice:GetTextSize("...", 12, Enum.Font.Gotham, hugevec2).X + 12
 local placeholderboxsize = textservice:GetTextSize("Enter Text...", 12, Enum.Font.Gotham, hugevec2).X + 12
 
+-- Mobile Detection
+local isMobile = userinputservice.TouchEnabled and not userinputservice.KeyboardEnabled
+
 local blacklistedkeys = {
 	[Enum.KeyCode.Unknown] = true
 }
@@ -98,12 +101,27 @@ end
 
 local function customscroll(frame, scroll, jump)
     scroll.ScrollingEnabled = false
-    frame.MouseWheelForward:Connect(function()
-        scroll.CanvasPosition = scroll.CanvasPosition - Vector2.new(0, math.min(jump, scroll.CanvasPosition.Y))
-    end)
-    frame.MouseWheelBackward:Connect(function()
-        scroll.CanvasPosition = scroll.CanvasPosition + Vector2.new(0, math.min(jump, scroll.AbsoluteCanvasSize.Y - scroll.AbsoluteSize.Y - scroll.CanvasPosition.Y))
-    end)
+    
+    -- Desktop scrolling (mouse wheel)
+    if not isMobile then
+        frame.MouseWheelForward:Connect(function()
+            scroll.CanvasPosition = scroll.CanvasPosition - Vector2.new(0, math.min(jump, scroll.CanvasPosition.Y))
+        end)
+        frame.MouseWheelBackward:Connect(function()
+            scroll.CanvasPosition = scroll.CanvasPosition + Vector2.new(0, math.min(jump, scroll.AbsoluteCanvasSize.Y - scroll.AbsoluteSize.Y - scroll.CanvasPosition.Y))
+        end)
+    else
+        -- Mobile scrolling (touch)
+        scroll.ScrollingEnabled = true
+        scroll.ScrollBarThickness = 6
+        scroll.ScrollingDirection = Enum.ScrollingDirection.Y
+        scroll.CanvasSize = UDim2.new(0, 0, 0, scroll.AbsoluteCanvasSize.Y)
+        
+        -- Update canvas size when content changes
+        scroll:GetPropertyChangedSignal("AbsoluteCanvasSize"):Connect(function()
+            scroll.CanvasSize = UDim2.new(0, 0, 0, scroll.AbsoluteCanvasSize.Y)
+        end)
+    end
 end
 
 local function ripple(inst)
@@ -2388,11 +2406,88 @@ function library.new(options)
         end
     end)
 
+	-- Create mobile toggle button if on mobile
+	if isMobile then
+		newlibrary.mobileToggleButton = create("ImageButton", {
+			Theme = {
+				BackgroundColor3 = "highlight"
+			},
+			Image = "rbxassetid://7734053495", -- Menu icon
+			ImageColor3 = Color3.new(1, 1, 1),
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, -20, 0, 20),
+			Size = UDim2.new(0, 50, 0, 50),
+			BackgroundTransparency = 0.2,
+			BorderSizePixel = 0,
+			ZIndex = 100,
+			Parent = newlibrary.gui,
+			Name = "MobileToggle"
+		}, {
+			create("UICorner", {
+				CornerRadius = UDim.new(0.5, 0)
+			})
+		})
+
+		-- Make the button draggable and clickable
+		local dragging = false
+		local dragStart = nil
+		local startPos = nil
+		local isTap = false
+		
+		newlibrary.mobileToggleButton.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.Touch then
+				isTap = true
+				dragging = false
+				dragStart = input.Position
+				startPos = newlibrary.mobileToggleButton.Position
+				
+				-- Wait a moment to detect if this is a drag or tap
+				task.wait(0.15)
+				if dragStart and (input.Position - dragStart).Magnitude > 10 then
+					isTap = false
+				end
+			end
+		end)
+
+		newlibrary.mobileToggleButton.InputChanged:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.Touch and dragStart then
+				local delta = input.Position - dragStart
+				if delta.Magnitude > 10 then
+					dragging = true
+					isTap = false
+					newlibrary.mobileToggleButton.Position = UDim2.new(
+						startPos.X.Scale,
+						startPos.X.Offset + delta.X,
+						startPos.Y.Scale,
+						startPos.Y.Offset + delta.Y
+					)
+				end
+			end
+		end)
+
+		newlibrary.mobileToggleButton.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.Touch then
+				if isTap and not dragging then
+					-- This was a tap, toggle the UI
+					newlibrary:Toggle()
+				end
+				dragging = false
+				dragStart = nil
+				startPos = nil
+				isTap = false
+			end
+		end)
+	end
+
 	return newlibrary
 end
 
 function library:Toggle()
-	self.gui.Enabled = not self.gui.Enabled
+	if self.gui.main then
+		self.gui.main.Visible = not self.gui.main.Visible
+	else
+		self.gui.Enabled = not self.gui.Enabled
+	end
 end
 
 function library:Destroy()

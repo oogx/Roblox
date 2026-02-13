@@ -2484,7 +2484,9 @@ end
 
 function library:Toggle()
 	if self.gui.main then
-		self.gui.main.Visible = not self.gui.main.Visible
+		local visible = not self.gui.main.Visible
+		self.gui.main.Visible = visible
+		self.gui.clickblock.Visible = visible
 	else
 		self.gui.Enabled = not self.gui.Enabled
 	end

@@ -2802,7 +2802,7 @@ function library:AddSettings()
             self:Notify({ Content = "No valid config with the name '" .. self.Flags.ConfigName .. "' was found" })
         end
     end })
-	configs:AddLabel({ Content = "Set the config name to auto-load on start, then press 'Set Auto Load Config' to save that choice.", Flag = "ConfigText"})
+	configs:AddLabel({ Content = "Set the config name to Default on start, then press 'Set Auto Load Config' to save that choice.", Flag = "ConfigText"})
 	configs:AddTextBox({ Content = "Auto Load Config Name", Flag = "AutoLoadConfigName", ignore = true })
 	configs:AddButton({ Content = "Set Auto Load Config", Flag = "SetAutoLoad", Callback = function()
 		local name = self.Flags.AutoLoadConfigName

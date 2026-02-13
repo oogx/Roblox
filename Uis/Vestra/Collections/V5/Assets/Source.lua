@@ -2384,44 +2384,6 @@ function library.new(options)
 	
 	customscroll(newlibrary.gui.main.left.container.holder, newlibrary.gui.main.left.container, 65)
 	
-	-- FIXED: Add UI scaling for mobile devices
-	if isMobile then
-		local ViewportSize = workspace.CurrentCamera.ViewportSize
-		local screenWidth = ViewportSize.X
-		local screenHeight = ViewportSize.Y
-		
-		-- Calculate scale factor based on screen size (base size is 560x435)
-		local baseWidth = 560
-		local baseHeight = 435
-		local scaleX = math.min(screenWidth / baseWidth * 0.85, 1) -- 85% of screen width max
-		local scaleY = math.min(screenHeight / baseHeight * 0.75, 1) -- 75% of screen height max
-		local scale = math.min(scaleX, scaleY)
-		
-		-- Apply scaling
-		local newWidth = baseWidth * scale
-		local newHeight = baseHeight * scale
-		
-		newlibrary.gui.main.Size = UDim2.new(0, newWidth, 0, newHeight)
-		newlibrary.gui.clickblock.Size = UDim2.new(0, newWidth, 0, newHeight)
-		
-		-- Update on viewport size change
-		workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-			local newViewportSize = workspace.CurrentCamera.ViewportSize
-			local newScreenWidth = newViewportSize.X
-			local newScreenHeight = newViewportSize.Y
-			
-			local newScaleX = math.min(newScreenWidth / baseWidth * 0.85, 1)
-			local newScaleY = math.min(newScreenHeight / baseHeight * 0.75, 1)
-			local newScale = math.min(newScaleX, newScaleY)
-			
-			local scaledWidth = baseWidth * newScale
-			local scaledHeight = baseHeight * newScale
-			
-			newlibrary.gui.main.Size = UDim2.new(0, scaledWidth, 0, scaledHeight)
-			newlibrary.gui.clickblock.Size = UDim2.new(0, scaledWidth, 0, scaledHeight)
-		end)
-	end
-	
 	userinputservice.InputBegan:Connect(function(input)
         if newlibrary.settings.binding == false and userinputservice:GetFocusedTextBox() == nil then
             local name = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode.Name or input.UserInputType.Name
@@ -2521,17 +2483,8 @@ function library.new(options)
 end
 
 function library:Toggle()
-	-- FIXED: Properly toggle UI visibility AND input blocking
 	if self.gui.main then
-		local isVisible = self.gui.main.Visible
-		self.gui.main.Visible = not isVisible
-		-- Also toggle the click blocker
-		if self.gui.clickblock then
-			self.gui.clickblock.Visible = not isVisible
-			self.gui.clickblock.Active = not isVisible
-		end
-		-- Ensure input is properly blocked/unblocked
-		self.gui.main.Active = not isVisible
+		self.gui.main.Visible = not self.gui.main.Visible
 	else
 		self.gui.Enabled = not self.gui.Enabled
 	end
@@ -2588,10 +2541,10 @@ function library:LoadConfig(name)
 				local item = self.Items[i]
 				if item then
 					if item.itemtype == "picker" then
-						task.spawn(item.set, item, v.h, v.s, v.v)
-						task.spawn(item.setrainbow, item, v.rainbow)
+						if item.set then task.spawn(item.set, item, v.h, v.s, v.v) end
+						if item.setrainbow then task.spawn(item.setrainbow, item, v.rainbow) end
 					else
-						task.spawn(item.set, item, v)
+						if item.set then task.spawn(item.set, item, v) end
 					end
 				end
 			end
@@ -2849,7 +2802,19 @@ function library:AddSettings()
             self:Notify({ Content = "No valid config with the name '" .. self.Flags.ConfigName .. "' was found" })
         end
     end })
-	configs:AddLabel({ Content = "To auto load configs please name the config Default and that will auto load on execute.", Flag = "ConfigText"})
+	configs:AddLabel({ Content = "Set the config name to auto-load on start, then press 'Set Auto Load Config' to save that choice.", Flag = "ConfigText"})
+	configs:AddTextBox({ Content = "Auto Load Config Name", Flag = "AutoLoadConfigName", ignore = true })
+	configs:AddButton({ Content = "Set Auto Load Config", Flag = "SetAutoLoad", Callback = function()
+		local name = self.Flags.AutoLoadConfigName
+		if name and name ~= "" then
+			pcall(function()
+				writefile(UiName .. "/autoload.txt", name)
+			end)
+			self:Notify({ Content = "Auto load config set to: '" .. name .. "'" })
+		else
+			self:Notify({ Content = "Please enter a config name in the box above first" })
+		end
+	end })
     configs:AddButton({ Content = "Create Config", Flag = "SaveConfig", Callback = function()
         self.Items.ConfigName:additem(self.Flags.SaveFileName)
 		self:SaveConfig(self.Flags.ConfigName)
@@ -2905,7 +2870,13 @@ function library:AddSettings()
     Credits:AddLabel({ Content = "Discord - xidm", Flag = "Credit1"})
     Credits:AddLabel({ Content = "Discord - ssol_shots", Flag = "Credit2"})
 	Credits:AddLabel({ Content = "Discord Server: discord.gg/XusxW2HFKG", Flag = "Credit3"})
-    self:LoadConfig("Default")
+    local autoLoadName = "Default"
+	pcall(function()
+		if isfile(UiName .. "/autoload.txt") then
+			autoLoadName = readfile(UiName .. "/autoload.txt")
+		end
+	end)
+	self:LoadConfig(autoLoadName)
 end
 --[[ Return ]]--
 return library
